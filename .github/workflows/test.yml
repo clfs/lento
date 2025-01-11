@@ -3,10 +3,14 @@ on:
   - push
   - pull_request
 permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   go-tests:
     name: Go tests
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
