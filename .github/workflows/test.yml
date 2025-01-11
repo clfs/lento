@@ -19,7 +19,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version: 1.23.x
       - name: Check Go formatting
         run: go fmt ./... && git diff --exit-code
       - name: Check go.mod
