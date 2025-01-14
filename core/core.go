@@ -15,14 +15,6 @@ func (c Color) Other() Color {
 	return !c
 }
 
-// Uint64 returns 0 for [White] and 1 for [Black].
-func (c Color) Uint64() uint64 {
-	if c {
-		return 1
-	}
-	return 0
-}
-
 // A PieceType represents a type of piece.
 type PieceType uint8
 
