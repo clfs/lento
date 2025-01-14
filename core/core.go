@@ -103,6 +103,18 @@ const (
 	Rank8
 )
 
+// Above returns the rank above r.
+// It is invalid to call Above if r is [Rank8].
+func (r Rank) Above() Rank {
+	return r + 1
+}
+
+// Below returns the rank below r.
+// It is invalid to call Below if r is [Rank1].
+func (r Rank) Below() Rank {
+	return r - 1
+}
+
 // A Square is a location on the board.
 type Square uint16
 
@@ -187,4 +199,16 @@ func (s Square) File() File {
 // Rank returns the rank that the square lies on.
 func (s Square) Rank() Rank {
 	return Rank(s / 8)
+}
+
+// Above returns the square above s.
+// It is invalid to call Above if s is on the eighth rank.
+func (s Square) Above() Square {
+	return s + 8
+}
+
+// Below returns the square below s.
+// It is invalid to call Below if s is on the first rank.
+func (s Square) Below() Square {
+	return s - 8
 }
