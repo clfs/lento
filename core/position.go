@@ -114,7 +114,7 @@ func NewBoard() Board {
 	return b
 }
 
-// Get returns the piece on the given square, if any.
+// Get returns the piece on s, if any.
 func (b *Board) Get(s Square) (Piece, bool) {
 	for i, bb := range b.occupied {
 		if bb.Get(s) {
@@ -124,25 +124,49 @@ func (b *Board) Get(s Square) (Piece, bool) {
 	return 0, false
 }
 
-// IsOccupied returns true if the given square is occupied.
+// IsEmpty returns true if s is empty.
+func (b *Board) IsEmpty(s Square) bool {
+	return !b.IsOccupied(s)
+}
+
+// IsOccupied returns true if s is occupied.
 func (b *Board) IsOccupied(s Square) bool {
 	_, ok := b.Get(s)
 	return ok
 }
 
-// Set places a piece on a square.
-// If another piece is already there, Set removes the other piece.
+// IsOccupiedByPiece returns true if s is occupied by the given piece.
+func (b *Board) IsOccupiedByPiece(s Square, p Piece) bool {
+	return b.occupied[p].Get(s)
+}
+
+// Set places a piece on s.
+//
+// It is invalid to call Set on an already-occupied square.
 func (b *Board) Set(p Piece, s Square) {
-	b.Clear(s)
 	b.occupied[p].Set(s)
 }
 
-// Clear removes a piece from a square.
-// It is safe to call Clear on a square that is already empty.
-func (b *Board) Clear(s Square) {
+// Clear removes the given piece from s.
+func (b *Board) Clear(p Piece, s Square) {
+	b.occupied[p].Clear(s)
+}
+
+// ClearAny removes any piece from s.
+// It is safe to call ClearAny on an empty square.
+func (b *Board) ClearAny(s Square) {
 	for i := range b.occupied {
 		b.occupied[i].Clear(s)
 	}
+}
+
+// ClearAndSet clears p from one square and sets p on another.
+//
+// It is invalid to call ClearAndSet if the destination square is already
+// occupied.
+func (b *Board) ClearAndSet(p Piece, from, to Square) {
+	b.Clear(p, from)
+	b.Set(p, to)
 }
 
 // CastlingRights stores castling rights for both players.
@@ -318,9 +342,9 @@ func (p *Position) Move(m Move) {
 	epSq, ok := p.ep.Get()
 	if ok && isPawnMove && isCapture && to == epSq {
 		if p.active == White {
-			p.board.Clear(epSq.Below()) // White captures a black pawn.
+			p.board.Clear(BlackPawn, epSq.Below())
 		} else {
-			p.board.Clear(epSq.Above()) // Black captures a white pawn.
+			p.board.Clear(WhitePawn, epSq.Above())
 		}
 	}
 
@@ -359,31 +383,28 @@ func (p *Position) Move(m Move) {
 		p.cr.ClearBlackOO()
 	}
 
-	// If promoting, update the held piece.
+	// Move the piece from its initial square to its final square, promoting if
+	// necessary.
+	//
+	// If castling, this only changes the location of the king.
+	p.board.Clear(held, from)
 	if pt, ok := m.Promotion(); ok {
 		held = NewPiece(p.active, pt)
 	}
-
-	// Move the piece from its initial square to its final square.
-	// If castling, this changes the location of the king.
-	p.board.Clear(from)
+	p.board.ClearAny(to)
 	p.board.Set(held, to)
 
 	// If castling, move the castled rook.
 	if held.Type() == King {
 		switch {
-		case from == E1 && to == G1: // WhiteOO
-			p.board.Clear(H1)
-			p.board.Set(WhiteRook, F1)
-		case from == E1 && to == C1: // WhiteOOO
-			p.board.Clear(A1)
-			p.board.Set(WhiteRook, D1)
-		case from == E8 && to == G8: // BlackOO
-			p.board.Clear(H8)
-			p.board.Set(BlackRook, F8)
-		case from == E8 && to == C8: // BlackOOO
-			p.board.Clear(A8)
-			p.board.Set(BlackRook, D8)
+		case from == E1 && to == G1:
+			p.board.ClearAndSet(WhiteRook, H1, F1) // WhiteOO
+		case from == E1 && to == C1:
+			p.board.ClearAndSet(WhiteRook, A1, D1) // WhiteOOO
+		case from == E8 && to == G8:
+			p.board.ClearAndSet(BlackRook, H8, F8) // BlackOO
+		case from == E8 && to == C8:
+			p.board.ClearAndSet(BlackRook, A8, D8) // BlackOOO
 		}
 	}
 
