@@ -137,6 +137,7 @@ func (b *Board) IsOccupied(s Square) bool {
 
 // Set clears s, then places a piece on it.
 func (b *Board) Set(p Piece, s Square) {
+	b.Clear(s)
 	b.occupied[p].Set(s)
 }
 
