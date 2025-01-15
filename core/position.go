@@ -265,7 +265,7 @@ type EnPassantTarget struct {
 
 // Get returns the en passant target, if any.
 func (e *EnPassantTarget) Get() (Square, bool) {
-	return Square(e.val), e.val == 0
+	return Square(e.val), e.val != 0
 }
 
 // Exists returns true if an en passant target exists.
@@ -404,4 +404,39 @@ func (p *Position) Move(m Move) {
 
 	// Switch sides.
 	p.active = p.active.Other()
+}
+
+// Board returns the board.
+func (p *Position) Board() Board {
+	return p.board
+}
+
+// Active returns the active color.
+func (p *Position) Active() Color {
+	return p.active
+}
+
+// CastlingRights returns the castling rights for both players.
+func (p *Position) CastlingRights() CastlingRights {
+	return p.cr
+}
+
+// EnPassantTarget returns the en passant target, if any.
+func (p *Position) EnPassantTarget() EnPassantTarget {
+	return p.ep
+}
+
+// HalfmoveClock returns the value of the halfmove clock.
+//
+// The halfmove clock measures the number of halfmoves since the last
+// capture or pawn move.
+func (p *Position) HalfmoveClock() int {
+	return int(p.hmc)
+}
+
+// FullmoveNumber returns the fullmove number.
+//
+// The fullmove number starts at 1 and is incremented after each Black move.
+func (p *Position) FullmoveNumber() int {
+	return int(p.fmn)
 }
