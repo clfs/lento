@@ -247,62 +247,69 @@ func (c *CastlingRights) ClearBlackOOO() {
 	c.val &^= 8
 }
 
-// EnPassantTarget stores the en passant target for the current player, if any.
+// enPassantTarget stores the en passant target for the current player, if any.
 //
-// An en passant target exists if and only if the last move was a double pawn
-// push.
-//
-// The existence of an en passant target is distinct from the ability to
-// perform an en passant capture. For example, after 1. e4, Black has an en
-// passant target on the e-file, but 1. ... dxe3 and 1. ... fxe3 are illegal
-// moves.
-//
-// The zero value of EnPassantTarget indicates no target exists.
-type EnPassantTarget struct {
+// The zero value of enPassantTarget indicates no target exists.
+type enPassantTarget struct {
 	// The square of the e.p. target, or 0 if no target exists.
 	val uint8
 }
 
 // Get returns the en passant target, if any.
-func (e *EnPassantTarget) Get() (Square, bool) {
+func (e *enPassantTarget) Get() (Square, bool) {
 	return Square(e.val), e.val != 0
 }
 
 // Exists returns true if an en passant target exists.
-func (e *EnPassantTarget) Exists() bool {
+func (e *enPassantTarget) Exists() bool {
 	_, ok := e.Get()
 	return ok
 }
 
 // Set sets the en passant target.
-func (e *EnPassantTarget) Set(s Square) {
+func (e *enPassantTarget) Set(s Square) {
 	e.val = uint8(s)
 }
 
 // Clear clears the en passant target.
-func (e *EnPassantTarget) Clear() {
+func (e *enPassantTarget) Clear() {
 	e.val = 0
 }
 
 // Position represents a game position.
 type Position struct {
-	board  Board
-	active Color
-	ep     EnPassantTarget
-	cr     CastlingRights
+	board      Board
+	sideToMove Color
+	ep         enPassantTarget
+	cr         CastlingRights
 	// The halfmove clock measures the number of halfmoves since the last
 	// capture or pawn move.
-	hmc uint8
+	hmc int
 	// The fullmove number starts at 1 and is incremented after each Black move.
-	fmn uint16
+	fmn int
 }
 
 // NewPosition returns a starting position.
-func NewPosition() Position {
-	return Position{
+func NewPosition(opts ...PositionOption) Position {
+	// Default options.
+	options := positionOptions{
 		board: NewBoard(),
 		cr:    NewCastlingRights(),
 		fmn:   1,
+	}
+
+	// Custom options.
+	for _, o := range opts {
+		o.apply(&options)
+	}
+
+	return Position{
+		board:      options.board,
+		sideToMove: options.sideToMove,
+		ep:         options.ep,
+		cr:         options.cr,
+		hmc:        options.hmc,
+		fmn:        options.fmn,
 	}
 }
 
@@ -321,7 +328,7 @@ func (p *Position) Move(m Move) {
 	// If capturing e.p., remove the captured pawn.
 	epSq, ok := p.ep.Get()
 	if ok && isPawnMove && isCapture && to == epSq {
-		if p.active == White {
+		if p.sideToMove == White {
 			p.board.Clear(epSq.Below())
 		} else {
 			p.board.Clear(epSq.Above())
@@ -365,7 +372,7 @@ func (p *Position) Move(m Move) {
 
 	// If promoting, swap out the held piece.
 	if become, ok := m.Promotion(); ok {
-		held = NewPiece(p.active, become)
+		held = NewPiece(p.sideToMove, become)
 	}
 
 	// Move the held piece.
@@ -398,12 +405,12 @@ func (p *Position) Move(m Move) {
 	}
 
 	// Update the full move number.
-	if p.active == Black {
+	if p.sideToMove == Black {
 		p.fmn++
 	}
 
 	// Switch sides.
-	p.active = p.active.Other()
+	p.sideToMove = p.sideToMove.Other()
 }
 
 // Board returns the board.
@@ -411,25 +418,31 @@ func (p *Position) Board() Board {
 	return p.board
 }
 
-// Active returns the active color.
-func (p *Position) Active() Color {
-	return p.active
+// SideToMove returns the color of the player whose side it is to move.
+func (p *Position) SideToMove() Color {
+	return p.sideToMove
 }
 
-// CastlingRights returns the castling rights for both players.
+// CastlingRights returns the castling rights available to both players.
 func (p *Position) CastlingRights() CastlingRights {
 	return p.cr
 }
 
-// EnPassantTarget returns the en passant target, if any.
-func (p *Position) EnPassantTarget() EnPassantTarget {
-	return p.ep
+// EnPassantTarget returns the current en passant target, if any.
+//
+// An en passant target exists if and only if the last move was a double pawn
+// push.
+//
+// The existence of an en passant target is distinct from the ability to perform
+// an en passant capture. For example, after 1. e4, Black has an en passant
+// target on e3, but 1. ... dxe3 and 1. ... fxe3 are illegal moves.
+func (p *Position) EnPassantTarget() (Square, bool) {
+	sq, ok := p.ep.Get()
+	return sq, ok
 }
 
-// HalfmoveClock returns the value of the halfmove clock.
-//
-// The halfmove clock measures the number of halfmoves since the last
-// capture or pawn move.
+// HalfmoveClock returns the number of halfmoves since the last capture or pawn
+// move.
 func (p *Position) HalfmoveClock() int {
 	return int(p.hmc)
 }

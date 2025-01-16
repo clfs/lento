@@ -9,16 +9,14 @@ import (
 
 // Encode encodes a position using FEN.
 func Encode(p core.Position) string {
-	var sb strings.Builder
-
-	fmt.Fprintf(&sb, "%s ", encodeBoard(p.Board()))
-	fmt.Fprintf(&sb, "%c ", encodeColor(p.Active()))
-	fmt.Fprintf(&sb, "%s ", encodeCastlingRights(p.CastlingRights()))
-	fmt.Fprintf(&sb, "%s ", encodeEnPassantTarget(p.EnPassantTarget()))
-	fmt.Fprintf(&sb, "%d ", p.HalfmoveClock())
-	fmt.Fprintf(&sb, "%d", p.FullmoveNumber())
-
-	return sb.String()
+	return fmt.Sprintf("%s %c %s %s %d %d",
+		encodeBoard(p.Board()),
+		encodeColor(p.SideToMove()),
+		encodeCastlingRights(p.CastlingRights()),
+		encodeEnPassantTarget(p.EnPassantTarget()),
+		p.HalfmoveClock(),
+		p.FullmoveNumber(),
+	)
 }
 
 func encodePiece(p core.Piece) byte {
@@ -104,8 +102,7 @@ func encodeCastlingRights(c core.CastlingRights) string {
 	return sb.String()
 }
 
-func encodeEnPassantTarget(e core.EnPassantTarget) string {
-	sq, ok := e.Get()
+func encodeEnPassantTarget(sq core.Square, ok bool) string {
 	if !ok {
 		return "-"
 	}
