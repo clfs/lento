@@ -4,7 +4,7 @@ type positionOptions struct {
 	board      Board
 	sideToMove Color
 	cr         CastlingRights
-	ep         enPassantTarget
+	ep         EnPassantTarget
 	hmc        int
 	fmn        int
 	moves      []Move
@@ -47,14 +47,14 @@ func WithCastlingRights(cr CastlingRights) PositionOption {
 	return castlingRightsOption(cr)
 }
 
-type enPassantOption enPassantTarget
+type enPassantOption EnPassantTarget
 
 func (e enPassantOption) apply(opts *positionOptions) {
-	opts.ep = enPassantTarget(e)
+	opts.ep = EnPassantTarget(e)
 }
 
 func WithEnPassantTarget(s Square) PositionOption {
-	var ep enPassantTarget
+	var ep EnPassantTarget
 	ep.Set(s)
 	return enPassantOption(ep)
 }
@@ -77,14 +77,4 @@ func (f fullmoveNumberOption) apply(opts *positionOptions) {
 
 func WithFullmoveNumber(n int) PositionOption {
 	return fullmoveNumberOption(n)
-}
-
-type movesOption []Move
-
-func (m movesOption) apply(opts *positionOptions) {
-	opts.moves = []Move(m)
-}
-
-func WithMoves(m []Move) PositionOption {
-	return movesOption(m)
 }

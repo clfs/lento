@@ -7,43 +7,49 @@ import (
 	"github.com/clfs/lento/core"
 )
 
-// Encode encodes a position using FEN.
+// Encode encodes a position into FEN.
 func Encode(p core.Position) string {
-	return fmt.Sprintf("%s %c %s %s %d %d",
-		encodeBoard(p.Board()),
-		encodeColor(p.SideToMove()),
-		encodeCastlingRights(p.CastlingRights()),
-		encodeEnPassantTarget(p.EnPassantTarget()),
-		p.HalfmoveClock(),
-		p.FullmoveNumber(),
-	)
+	var b strings.Builder
+
+	fmt.Fprintf(&b, "%s ", EncodeBoard(p.Board()))
+	fmt.Fprintf(&b, "%s ", EncodeColor(p.SideToMove()))
+	fmt.Fprintf(&b, "%s ", EncodeCastlingRights(p.CastlingRights()))
+	fmt.Fprintf(&b, "%s ", EncodeEnPassantTarget(p.EnPassantTarget()))
+	fmt.Fprintf(&b, "%d ", p.HalfmoveClock())
+	fmt.Fprintf(&b, "%d", p.FullmoveNumber())
+
+	return b.String()
 }
 
-func encodePiece(p core.Piece) byte {
-	return map[core.Piece]byte{
-		core.WhitePawn:   'P',
-		core.WhiteKnight: 'N',
-		core.WhiteBishop: 'B',
-		core.WhiteRook:   'R',
-		core.WhiteQueen:  'Q',
-		core.WhiteKing:   'K',
-		core.BlackPawn:   'p',
-		core.BlackKnight: 'n',
-		core.BlackBishop: 'b',
-		core.BlackRook:   'r',
-		core.BlackQueen:  'q',
-		core.BlackKing:   'k',
-	}[p]
-}
-
-func encodeColor(c core.Color) byte {
-	if c {
-		return 'b'
+// EncodePiece encodes a piece into FEN.
+func EncodePiece(p core.Piece) string {
+	m := map[core.Piece]string{
+		core.WhitePawn:   "P",
+		core.WhiteKnight: "N",
+		core.WhiteBishop: "B",
+		core.WhiteRook:   "R",
+		core.WhiteQueen:  "Q",
+		core.WhiteKing:   "K",
+		core.BlackPawn:   "p",
+		core.BlackKnight: "n",
+		core.BlackBishop: "b",
+		core.BlackRook:   "r",
+		core.BlackQueen:  "q",
+		core.BlackKing:   "k",
 	}
-	return 'w'
+	return m[p]
 }
 
-func encodeBoard(b core.Board) string {
+// EncodeColor encodes a color into FEN.
+func EncodeColor(c core.Color) string {
+	if c == core.White {
+		return "w"
+	}
+	return "b"
+}
+
+// EncodeBoard encodes a board into FEN.
+func EncodeBoard(b core.Board) string {
 	var sb strings.Builder
 
 	for r := core.Rank8; r <= core.Rank8; r-- {
@@ -63,7 +69,7 @@ func encodeBoard(b core.Board) string {
 				gap = 0
 			}
 
-			sb.WriteByte(encodePiece(p))
+			sb.WriteString(EncodePiece(p))
 		}
 
 		// Row ends in gap?
@@ -80,7 +86,8 @@ func encodeBoard(b core.Board) string {
 	return sb.String()
 }
 
-func encodeCastlingRights(c core.CastlingRights) string {
+// EncodeCastlingRights encodes castling rights into FEN.
+func EncodeCastlingRights(c core.CastlingRights) string {
 	var sb strings.Builder
 
 	if c.GetWhiteOO() {
@@ -102,7 +109,9 @@ func encodeCastlingRights(c core.CastlingRights) string {
 	return sb.String()
 }
 
-func encodeEnPassantTarget(sq core.Square, ok bool) string {
+// EncodeEnPassantTarget encodes an en passant target into FEN.
+func EncodeEnPassantTarget(e core.EnPassantTarget) string {
+	sq, ok := e.Get()
 	if !ok {
 		return "-"
 	}

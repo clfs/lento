@@ -9,7 +9,7 @@ import (
 	"github.com/clfs/lento/core"
 )
 
-// MustDecode is like Decode but panics if the FEN is invalid.
+// MustDecode is like [Decode] but panics if the FEN string is invalid.
 func MustDecode(s string) core.Position {
 	p, err := Decode(s)
 	if err != nil {
