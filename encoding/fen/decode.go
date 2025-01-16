@@ -18,29 +18,29 @@ func MustDecode(s string) core.Position {
 	return p
 }
 
-// Decode decodes a FEN string and returns the position it represents.
+// Decode decodes a position from FEN.
 func Decode(s string) (core.Position, error) {
 	fields := strings.Split(s, " ")
 	if n := len(fields); n != 6 {
 		return core.Position{}, fmt.Errorf("bad field count: %d", n)
 	}
 
-	board, err := decodeBoard(fields[0])
+	board, err := DecodeBoard(fields[0])
 	if err != nil {
 		return core.Position{}, fmt.Errorf("bad board: %v", err)
 	}
 
-	sideToMove, err := decodeColor(fields[1])
+	sideToMove, err := DecodeColor(fields[1])
 	if err != nil {
 		return core.Position{}, err
 	}
 
-	castlingRights, err := decodeCastlingRights(fields[2])
+	castlingRights, err := DecodeCastlingRights(fields[2])
 	if err != nil {
 		return core.Position{}, err
 	}
 
-	epTarget, epExists, err := decodeEnPassantTarget(fields[3])
+	epTarget, epExists, err := DecodeEnPassantTarget(fields[3])
 	if err != nil {
 		return core.Position{}, err
 	}
@@ -88,30 +88,31 @@ func Decode(s string) (core.Position, error) {
 	return p, nil
 }
 
-func decodePiece(r rune) (core.Piece, error) {
-	m := map[rune]core.Piece{
-		'P': core.WhitePawn,
-		'N': core.WhiteKnight,
-		'B': core.WhiteBishop,
-		'R': core.WhiteRook,
-		'Q': core.WhiteQueen,
-		'K': core.WhiteKing,
-		'p': core.BlackPawn,
-		'n': core.BlackKnight,
-		'b': core.BlackBishop,
-		'r': core.BlackRook,
-		'q': core.BlackQueen,
-		'k': core.BlackKing,
+func decodePiece(s string) (core.Piece, error) {
+	m := map[string]core.Piece{
+		"P": core.WhitePawn,
+		"N": core.WhiteKnight,
+		"B": core.WhiteBishop,
+		"R": core.WhiteRook,
+		"Q": core.WhiteQueen,
+		"K": core.WhiteKing,
+		"p": core.BlackPawn,
+		"n": core.BlackKnight,
+		"b": core.BlackBishop,
+		"r": core.BlackRook,
+		"q": core.BlackQueen,
+		"k": core.BlackKing,
 	}
 
-	p, ok := m[r]
+	p, ok := m[s]
 	if !ok {
-		return 0, fmt.Errorf("bad piece: %q", r)
+		return 0, fmt.Errorf("bad piece: %q", s)
 	}
 	return p, nil
 }
 
-func decodeBoard(s string) (core.Board, error) {
+// DecodeBoard decodes a board from FEN.
+func DecodeBoard(s string) (core.Board, error) {
 	var b core.Board
 
 	offset := int(core.A8) // top left corner
@@ -132,7 +133,7 @@ func decodeBoard(s string) (core.Board, error) {
 				offset += int(rn - '0') // advance rightwards by n
 				numPrev = true
 			default:
-				piece, err := decodePiece(rn)
+				piece, err := decodePiece(string(rn))
 				if err != nil {
 					return core.Board{}, err
 				}
@@ -153,7 +154,8 @@ func decodeBoard(s string) (core.Board, error) {
 	return b, nil
 }
 
-func decodeColor(s string) (core.Color, error) {
+// DecodeColor decodes a color from FEN.
+func DecodeColor(s string) (core.Color, error) {
 	switch s {
 	case "w":
 		return core.White, nil
@@ -164,7 +166,8 @@ func decodeColor(s string) (core.Color, error) {
 	}
 }
 
-func decodeCastlingRights(s string) (core.CastlingRights, error) {
+// DecodeCastlingRights decodes castling rights from FEN.
+func DecodeCastlingRights(s string) (core.CastlingRights, error) {
 	var cr core.CastlingRights
 
 	switch s {
@@ -224,7 +227,8 @@ func decodeCastlingRights(s string) (core.CastlingRights, error) {
 	return cr, nil
 }
 
-func decodeEnPassantTarget(s string) (core.Square, bool, error) {
+// DecodeEnPassantTarget decodes an en passant target from FEN.
+func DecodeEnPassantTarget(s string) (core.Square, bool, error) {
 	// TODO(clfs): Write this more cleanly.
 	if s == "-" {
 		return 0, false, nil

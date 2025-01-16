@@ -7,7 +7,7 @@ import (
 	"github.com/clfs/lento/core"
 )
 
-// Encode encodes a position into FEN.
+// Encode encodes a position to FEN.
 func Encode(p core.Position) string {
 	var b strings.Builder
 
@@ -21,8 +21,7 @@ func Encode(p core.Position) string {
 	return b.String()
 }
 
-// EncodePiece encodes a piece into FEN.
-func EncodePiece(p core.Piece) string {
+func encodePiece(p core.Piece) string {
 	m := map[core.Piece]string{
 		core.WhitePawn:   "P",
 		core.WhiteKnight: "N",
@@ -40,7 +39,7 @@ func EncodePiece(p core.Piece) string {
 	return m[p]
 }
 
-// EncodeColor encodes a color into FEN.
+// EncodeColor encodes a color to FEN.
 func EncodeColor(c core.Color) string {
 	if c == core.White {
 		return "w"
@@ -48,7 +47,7 @@ func EncodeColor(c core.Color) string {
 	return "b"
 }
 
-// EncodeBoard encodes a board into FEN.
+// EncodeBoard encodes a board to FEN.
 func EncodeBoard(b core.Board) string {
 	var sb strings.Builder
 
@@ -69,7 +68,7 @@ func EncodeBoard(b core.Board) string {
 				gap = 0
 			}
 
-			sb.WriteString(EncodePiece(p))
+			sb.WriteString(encodePiece(p))
 		}
 
 		// Row ends in gap?
@@ -86,7 +85,7 @@ func EncodeBoard(b core.Board) string {
 	return sb.String()
 }
 
-// EncodeCastlingRights encodes castling rights into FEN.
+// EncodeCastlingRights encodes castling rights to FEN.
 func EncodeCastlingRights(c core.CastlingRights) string {
 	var sb strings.Builder
 
@@ -109,7 +108,7 @@ func EncodeCastlingRights(c core.CastlingRights) string {
 	return sb.String()
 }
 
-// EncodeEnPassantTarget encodes an en passant target into FEN.
+// EncodeEnPassantTarget encodes an en passant target to FEN.
 func EncodeEnPassantTarget(e core.EnPassantTarget) string {
 	sq, ok := e.Get()
 	if !ok {
