@@ -7,7 +7,6 @@ type positionOptions struct {
 	ep         EnPassantTarget
 	hmc        int
 	fmn        int
-	moves      []Move
 }
 
 // PositionOption configures the creation of a new position.
