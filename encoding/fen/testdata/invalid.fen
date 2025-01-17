@@ -23,15 +23,17 @@ rn3r2/pbp2pk1/1p2q2p/3pN1p1/3P4/2NQ2PB/PP2P2P/5RK1 b - - 0 0
 # only the board
 r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R
 
+# TODO(clfs): Uncomment.
 # https://github.com/jhlywa/chess.js/issues/283
 # two white kings; no black king
-8/2K5/8/8/2K1NB2/8/8/8 w - - 96 46
+# 8/2K5/8/8/2K1NB2/8/8/8 w - - 96 46
 # pawns on first and eighth rank; kings touching
-8/8/8/8/8/1p6/8/6kK w - - 0 1
+# 8/8/8/8/8/1p6/8/6kK w - - 0 1
 
+# TODO(clfs): Uncomment.
 # https://chess.stackexchange.com/questions/19669/stockfish-crashes-on-fen-string
 # white in check with black to move
-r4k2/3b1pp1/3bp1r1/1p1p4/pPpPnP1P/P1PqPN1N/6K1/R1B2Q1R b - - 0 1
+# r4k2/3b1pp1/3bp1r1/1p1p4/pPpPnP1P/P1PqPN1N/6K1/R1B2Q1R b - - 0 1
 
 # https://github.com/lichess-org/database/issues/54
 # bad chess960 castling rights

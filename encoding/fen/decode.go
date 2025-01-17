@@ -40,13 +40,13 @@ func Decode(s string) (core.Position, error) {
 		return core.Position{}, err
 	}
 
-	epTarget, epExists, err := DecodeEnPassantTarget(fields[3])
+	enPassantRight, err := DecodeEnPassantTarget(fields[3])
 	if err != nil {
 		return core.Position{}, err
 	}
 
 	// TODO(clfs): Validate this more cleanly.
-	if epExists {
+	if epTarget, ok := enPassantRight.Get(); ok {
 		switch epTarget.Rank() {
 		case core.Rank3:
 			if sideToMove == core.White {
@@ -79,7 +79,7 @@ func Decode(s string) (core.Position, error) {
 		core.WithFullmoveNumber(fullmoveNumber),
 	}
 
-	if epExists {
+	if epTarget, ok := enPassantRight.Get(); ok {
 		opts = append(opts, core.WithEnPassantTarget(epTarget))
 	}
 
@@ -228,26 +228,27 @@ func DecodeCastlingRights(s string) (core.CastlingRights, error) {
 }
 
 // DecodeEnPassantTarget decodes an en passant target from FEN.
-func DecodeEnPassantTarget(s string) (core.Square, bool, error) {
+func DecodeEnPassantTarget(s string) (core.EnPassantTarget, error) {
 	// TODO(clfs): Write this more cleanly.
 	if s == "-" {
-		return 0, false, nil
+		return core.EnPassantTarget{}, nil
 	}
 
 	if len(s) != 2 {
-		return 0, false, fmt.Errorf("invalid e.p. target: %q", s)
+		return core.EnPassantTarget{}, fmt.Errorf("invalid e.p. target: %q", s)
 	}
 
 	f := core.File(s[0] - 'a')
 	r := core.Rank(s[1] - '1')
 
 	if f > core.FileH || r > core.Rank8 {
-		return 0, false, fmt.Errorf("invalid e.p. target: %q", s)
+		return core.EnPassantTarget{}, fmt.Errorf("invalid e.p. target: %q", s)
 	}
 
-	sq := core.NewSquare(f, r)
+	var e core.EnPassantTarget
+	e.Set(core.NewSquare(f, r))
 
-	return sq, true, nil
+	return e, nil
 }
 
 var halfmoveClockRegexp = regexp.MustCompile(`^(0|[1-9][0-9]*)$`)
